@@ -1,0 +1,33 @@
+Download and Install Office Professional Plus 2021 for free on Windows OS 🪟for Lifetime.
+
+⬇️ Download Office Customization Tools: https://config.office.com/deployments...
+⬇️ Download Office Deployment Tool: https://www.microsoft.com/en-US/downl...
+
+create a folder in disk C and name it "Office 2021"
+paste the two files here
+
+run the deployment tool as administrator and extract the files in the Office 2021 folder 
+
+
+run cmd as administrator
+
+Commands 💻 to Execute : 
+
+cd c:\Office 2021
+setup /configure configuration.xml
+
+once office is installed,,  proceed to activate
+
+go to program files ,,,and copy this path
+
+C:\Program Files\Microsoft Office\Office16
+
+run cmd and execute "cd\"
+
+then "cd C:\Program Files\Microsoft Office\Office16"
+
+then "cscript ospp.vbs /sethst:kms.03k.org"
+
+then "cscript ospp.vbs /act"
+
+ACTIVATION DONE
