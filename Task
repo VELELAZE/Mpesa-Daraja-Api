@@ -3,13 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prevent Paste in Textarea</title>
+    <title>Prevent Clipboard Input in Textarea</title>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var textarea = document.getElementById('myTextarea');
+
+            // Prevent pasting
             textarea.addEventListener('paste', function(event) {
                 event.preventDefault();
                 alert('Pasting is not allowed!');
+            });
+
+            // Prevent cutting
+            textarea.addEventListener('cut', function(event) {
+                event.preventDefault();
+                alert('Cutting is not allowed!');
+            });
+
+            // Prevent copying
+            textarea.addEventListener('copy', function(event) {
+                event.preventDefault();
+                alert('Copying is not allowed!');
+            });
+
+            // Prevent input from clipboard
+            textarea.addEventListener('input', function(event) {
+                if (textarea.value.length > 0 && event.inputType.startsWith('insertFrom')) {
+                    textarea.value = ''; // Clear the textarea
+                    alert('Input from clipboard is not allowed!');
+                }
             });
 
             var form = document.getElementById('myForm');
