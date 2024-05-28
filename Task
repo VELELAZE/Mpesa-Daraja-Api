@@ -1,5 +1,20 @@
-Gather information: Gather as much information as possible before making a decision. Consider alternative viewpoints and perspectives to ensure that you are making an informed decision.
-Be realistic: Be realistic about the potential outcomes of your decisions. Consider your abilities, circumstances, and limitations before setting goals or making decisions.
-Seek feedback: Seek feedback from trusted sources before making a decision. Get input from people who have experience in the area you are deciding about, or seek out objective third-party opinions.
-Practice mindfulness: Practice mindfulness and be present at the moment. This can help you become more aware of your thoughts and feelings and prevent wishful thinking from influencing your decisions.
-In conclusion, wishful thinking can lead to poor decision-making in various areas of our lives. It is essential to be aware of our biases, gather information, be realistic, seek feedback, and practice mindfulness to overcome wishful thinking. By doing so, we can make more informed decisions that align with our goals and aspirations.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prevent Paste in Textarea</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var textarea = document.getElementById('myTextarea');
+            textarea.addEventListener('paste', function(event) {
+                event.preventDefault();
+                alert('Pasting is not allowed!');
+            });
+        });
+    </script>
+</head>
+<body>
+    <textarea id="myTextarea" rows="10" cols="30"></textarea>
+</body>
+</html>
