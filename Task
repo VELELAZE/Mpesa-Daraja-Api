@@ -1,307 +1,384 @@
 <?php
 session_start();
-include('server.php');
-
-if (!isset($_SESSION["username"])) {
-    header("Location: index.php");
-    exit();
-}
-
-
-$username = trim($_SESSION["username"]);
-$sql="SELECT * FROM signup WHERE username='$username'";
-$result=mysqli_query($conn,$sql);
-if($result){
-    $row=$result->fetch_assoc();
-    $status=$row['status'];
-    if($status !='active')
-    {
-        header("location:index.php");
-    }
-}
+include("server.php");
  
- 
-              $start=0;
-             $rows_per_page=5;
 
-         $records =$conn->query("SELECT * FROM meme");
-         $nr_of_rows= $records->num_rows;
-         $pages=ceil($nr_of_rows/$rows_per_page);
-
-         if(isset($_GET['page-nr']))
-         {
-              $page = $_GET['page-nr'] - 1;
-              $start = $page * $rows_per_page;
-         }
-         else{
-              $page=0;
-         }
-
-
-
-?>
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-       <meta charset="utf-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Posted Blogs</title>
-       <!-- Open sas Font-->
-       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-       <!--Material icons-->
-       <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
-      rel="stylesheet">
-      <!--Bootstrap icons-->
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-       <!-- Custom css -->
-       <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
-       <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
-     <!-- ICONS -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- STYLESHEET -->
-    <script>
-    if ( window.history.replaceState ) {
-        window.history.replaceState( null, null, window.location.href );
-    }
-</script>
-       <!-- Custom css -->
-        
-       <link rel="stylesheet" href="css/style.css">
-</head>
-<style>
-      
-       
-  .blogs{
-       display:block;
-       padding: 10px;
-       background: #fff;
-  }
-  .blogs h2{
-       color:darkblue;
-       font-weight: 800;
-       font-size: 16px;
-       text-align: center;
-  }
-  .content{
-       padding: 20px;
-  }
-
-
-    .table{
-              border: none;
-              width: 100%;
-              
-           
-              
-       }
-       th{
-              background:blueviolet;
-              color: whitesmoke;
-              font-size: 14px;
-       }
-       td{
-              font-size: small;
-              border: #f2f2f2 solid 7px;
-            
-       }
-         th td{
-        padding: 12px 15px;
-        text-align: left;
-       }
-       table tr td:nth-child(3){
-             text-align:left;
-            background: palegreen;
-             color:#333;
-            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-             padding: 12px;
-             font-weight: 700;
-             font-size: 17px;
-
-       }
-     .error{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: orangered;
-        padding: 50px;
-     }
-     .error h2{
-        color: black;
-        font-size: 16px;
-     }
-      
-       @media(max-width: 600px)
-       {
-        body{
-            display:block;
+ if(isset($_GET['ref']))
+ {
+      $ref=$_GET['ref'];
+        $sql = "SELECT * FROM signup WHERE username = '$ref'";
+        $result = $conn->query($sql);
+        if($result)
+        {
+               $row = $result->fetch_assoc();
+               $level1=$row['id'];
+               $level3=$row['leveltwo'];
+               $level2=$row['upline'];
         }
-         
-         .table-container{
-        width: 100%;
-        /*max-width: 900px;*/
-        margin: 0 auto;
-        padding: 5px;
-       
-    }
-    .table-wrapper{
-        overflow-x: hidden;
-        overflow-y: auto;
-    }
-    .styled-table{
-    width: 100%;
-    /*min-width: 800px;*/
+ }
+
+ 
+
+ 
+if(isset($_POST['submit']))
+{
+       $name = $_POST['name'];
+       $username =trim($_POST['user']);
+       $country=$_POST['country'];
+       $phone = $_POST['phone'];
+       $password =$_POST['pass'];
+       $cpassword=$_POST['cpass'];
+       $email = $_POST['email'];
     
-    }
        
-       }
-      
-</style>
 
-<body >
-       <div class="grid-container">
-<?php
-include'header.php';
-include'side.php';
-
-?>
-<!--Main-->
-<!--Main-->
-<main class="main-container" >
-<?php
-if($pages==0)
-{
-    ?>
-    <div class="error">
-        <h2>Oops! <?php echo $username ?> No Posted Blogs at the Moment</h2>
-    </div>
-    <?php
-}
-?>
-<?php 
-if($pages!=0)
-{
-?>
-
-
-
-
-
-<div class="blogs">
-              <h2>Welcome to Superqash Blog platform. Browse more Blog Templates here and use them as hyping materials to Earn more in Network Marketing.</h2>
-       <div class="content">
-              <section class="table-container">
-
-       <div class="table-wrapper">
-<table class="styled-table">
-       
-                     <tr>
-                            <th>Id</th>
-                            <th>Blogger</th>
-                            <th>Blog Posted</th>
-                           
-                     </tr>
-                     
-          
-              <?php
+       $sql = "select *from signup where username='$username'";
+       $result = mysqli_query($conn, $sql);
+       $count_user = mysqli_num_rows($result);
 
       
-              $id=$start+1;
-              $sql= "SELECT * FROM meme LIMIT $start,$rows_per_page";
-              $result = mysqli_query($conn,$sql);
+
+       $sql = "select *from users where phone='$phone'";
+       $result = mysqli_query($conn, $sql);
+       $count_phone = mysqli_num_rows($result);
+
+       $sql = "select *from signup where phone='$phone'";
+       $result = mysqli_query($conn, $sql);
+       $count_phon = mysqli_num_rows($result);
+
+       $sql = "select *from signup where email='$email'";
+       $result = mysqli_query($conn, $sql);
+       $count_email = mysqli_num_rows($result);
+
+
+
+
+
+       if($count_user==0  & $count_phone==0 & $count_phon==0 & $count_email==0)
+       {
+         if($password==$cpassword)
+         {
+              $upline =$_SESSION['userId'];
+             
+              $hash = password_hash($password,PASSWORD_DEFAULT);
+             
+              $sql = "INSERT INTO users(name, username,phone,country)VALUES('$name','$username','$phone','$country')";
+              $result = mysqli_query($conn, $sql);
+
               if($result)
               {
-                     while($row = $result->fetch_assoc())
-                     {       
-                              $user = $row['username'];
-                             $meme = $row['blog'];
-                            
+                 $sql = "SELECT * FROM users WHERE phone = '$phone'";
+                 $result = mysqli_query($conn,$sql);
 
-
-                              echo "<tr>";
-                              echo "<td>$id</td>";
-                              echo "<td>$user</td>";
-                              echo "<td>$meme</td>";
-                              echo "</tr>";
-                   $id++;
+               if ($result)
+               { 
+                 $row = $result->fetch_assoc();
+                 $phonenumber=$row['phone'];
+                 $country=$row['country'];
+                 if($country=='Kenya')
+                 {
+                            $code=254;
+                 }
+                 else
+                 {
+                     if($country=='Uganda')
+                     {
+                            $code=256;
                      }
-                   
-                     
-                   
-              } 
-              ?>
-                  </table>
-                   <div class="page-info">
-           <?php $current=$page+1;
-           ?>
-            Showing <?php echo $current."of".$pages ?> pages
-        </div>
-        <div class="pagination" style="margin-bottom: 20px;">
-            <a href="?page-nr=1">First</a>
-            <?php
-             if(isset($_GET['page-nr']) && $_GET['page-nr']>1){
-                ?>
-               <a href="?page-nr=<?php echo $_GET['page-nr']-1?>">Previous</a>
-               <?php
-             }
-             else{
-                ?>
-                 <a>Previous</a>
-                <?php
+                     if($country=='Ghana')
+                     {
+                            $code=233;
+                     }
+                     if($country=='Nigeria')
+                     {
+                            $code=234;
+                     }
+                 }
+
+               $phon=$code.$phonenumber;
                
-             }
-            ?>
-           <?php
-           if(!isset($_GET['page-nr'])){
-            ?>
-            <a href="?page-nr=2">Next</a>
-            <?php
-           }
-           else{
-            if($_GET['page-nr'] >= $pages){
-                ?>
-                <a>Next</a>
-                <?php
-            }
-            else{
-                ?>
-                <a href="?page-nr=<?php echo $_GET['page-nr'] + 1 ?> ">Next</a>
-                <?php
-            }
-           }
-           ?>
-            <a href="?page-nr=<?php echo $pages ?>">Last</a>
-        </div>
+               $sql = "INSERT INTO signup(name, username,upline,upname,leveltwo,levelth,phone,country,email,password)VALUES('$name','$username','$level1','$ref','$level2','$level3','$phon','$country','$email','$password')";
+               $result=mysqli_query($conn,$sql);
+                     if($result)
+                     {
+                            
+                     header("location:index.php");
 
-       </div>
-              </section>
-       </div>
-       </div>
-       </form>
+                     }
+                     
+                    
+                     }
+              
+                   
+              }
+         }
+         else{
+              $_SESSION['error']="Passwords Mismatch";
+               
+         }
+       }
+
+
+       else{
+              if($count_user>0)
+              {
+                      
+                   $_SESSION['error']="Username already exists";
+                     
+              }
        
-</div>
-</div>
-</div>
-<?php
+              if($count_phone>0 || $count_phon>0)
+              {
+                     $_SESSION['error']="Phone number already exists";
+              }
+              if($count_email>0)
+              {
+                     $_SESSION['error']="Email address already exists";
+                     
+              }
+       }
+
 }
+
+
 ?>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superqash sign up</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    
+</head>
+<style>
+       body {
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    font-family: 'Poppins', sans-serif;
+}
 
-</main>
-<!--End main-->
-</div>
+#form {
+    width: 330px;
+    margin: 5vh auto 0 auto;
+    padding: 20px;
+    background-color: whitesmoke;
+    border-radius: 4px;
+    font-size: 12px;
+}
 
-      <?php include'footer.php';
-?>
+#form h1 {
+    color: #0f2027;
+    text-align: center;
+}
 
-<!--Custom Js -->
+#form button {
+    padding: 10px;
+    margin-top: 10px;
+    width: 100%;
+    color: white;
+    background-color: rgb(41, 57, 194);
+    border: none;
+    border-radius: 4px;
+}
 
+.input-control {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-control input,select,option{
+    border: 2px solid #f0f0f0;
+	border-radius: 4px;
+	display: block;
+	font-size: 12px;
+	padding: 10px;
+	width: 100%;
+}
+select{
+    background-color: #fff;
+}
+::option{
+    outline: none;
+    border: none;
+    padding: 60px;
+}
+
+.input-control select,input:focus {
+    outline: 0;
+}
+
+.input-control.success input {
+    border-color: #09c372;
+}
+
+.input-control.error input {
+    border-color: #ff3860;
+}
+
+.input-control .error {
+    color: #ff3860;
+    font-size: 9px;
+    height: 13px;
+}
+
+</style>
+<body>
+    <div class="container">
+        <form id="form"  method="POST">
+            <h1>SuperQash Signup</h1>
+             <div class="input-control">
+                <label for="username">Full name</label>
+                <input id="name" name="name" type="text">
+                <div class="error"></div>
+            </div>
+            <div class="input-control">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" maxlength="10">
+                <div class="error"></div>
+            </div>
+            <div class="input-control">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="text">
+                <div class="error"></div>
+            </div>
+             <div class="input-control">
+                <label for="username">Phone number</label>
+                <input id="phone" name="phone" type="phone" maxlength="10">
+                <div class="error"></div>
+            </div>
+             <div class="input-control">
+                 <label for="country">Select Country</label>
+               <select name="country">
+                <option value="Kenya">Kenya</option>
+                <option value="Uganda">Uganda</option>
+                 <option value="Ghana">Ghana</option>
+                 <option value="Nigeria">Nigeria</option> 
+               </select>
+                <div class="error"></div>
+            </div>
+             <div class="input-control">
+                <label>Invited by</label>
+                <input type="text" value="<?php echo $ref ?>" readonly>
+                <div class="error"></div>
+            </div>
+            <div class="input-control">
+                <label for="password">Password</label>
+                <input id="password"name="password" type="password">
+                <div class="error"></div>
+            </div>
+            <div class="input-control">
+                <label for="password2">Password again</label>
+                <input id="password2"name="password2" type="password">
+                <div class="error"></div>
+            </div>
+            <button type="submit">Sign Up</button>
+        </form>
+    </div>
+    <script>
+       const form = document.getElementById('form');
+const username = document.getElementById('username');
+const email = document.getElementById('email');
+const password = document.getElementById('password');
+const password2 = document.getElementById('password2');
+const name = document.getElementById('name');
+const phone = document.getElementById('phone');
+
+form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    validateInputs();
+});
+
+const setError = (element, message) => {
+    const inputControl = element.parentElement;
+    const errorDisplay = inputControl.querySelector('.error');
+
+    errorDisplay.innerText = message;
+    inputControl.classList.add('error');
+    inputControl.classList.remove('success')
+}
+
+const setSuccess = element => {
+    const inputControl = element.parentElement;
+    const errorDisplay = inputControl.querySelector('.error');
+
+    errorDisplay.innerText = '';
+    inputControl.classList.add('success');
+    inputControl.classList.remove('error');
+};
+
+const isValidEmail = email => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+
+const validateInputs = () => {
+    const nameValue = name.value.trim();
+    const usernameValue = username.value.trim();
+    const emailValue = email.value.trim();
+    const phoneValue = phone.value.trim();
+    const passwordValue = password.value.trim();
+    const password2Value = password2.value.trim();
+
+     if(nameValue === '') {
+        setError(name, 'Your full is required');
+    } else {
+        setSuccess(name);
+    }
+
+     if(phoneValue === '') {
+        setError(phone, 'phone number is required');
+    }
+else if(!/^[0-9]*$/.test(phoneValue)){
+         setError(phone, 'phone number is invalid');
+    }
+     else 
+    {
+        setSuccess(phone);
+    }
+
+    if(usernameValue === '') {
+        setError(username, 'Username is required');
+    } 
+   else  if (/\s/.test(usernameValue))
+    {
+           setError(username,'Remove spaces from Username');
+    }
+    else if (usernameValue.length < 5 ) {
+        setError(username, 'Username must be at least 5 character.')
+    }
+    else {
+        setSuccess(username);
+    }
+
+    if(emailValue === '') {
+        setError(email, 'Email is required');
+    } else if (!isValidEmail(emailValue)) {
+        setError(email, 'Provide a valid email address');
+    } else {
+        setSuccess(email);
+    }
+
+    if(passwordValue === '') {
+        setError(password, 'Password is required');
+    } else if (passwordValue.length < 8 ) {
+        setError(password, 'Password must be at least 8 character.')
+    } else {
+        setSuccess(password);
+    }
+
+    if(password2Value === '') {
+        setError(password2, 'Please confirm your password');
+    } else if (password2Value !== passwordValue) {
+        setError(password2, "Passwords doesn't match");
+    } else {
+        setSuccess(password2);
+    }
+
+};
+
+    </script>
 </body>
-<script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js"
-      integrity="sha512-8Z5++K1rB3U+USaLKG6oO8uWWBhdYsM3hmdirnOEWp8h2B1aOikj5zBzlXs8QOrvY9OxEnD2QDkbSKKpfqcIWw=="
-      crossorigin="anonymous"
-    ></script>
-    <script src="js/script.js"></script>
 </html>
