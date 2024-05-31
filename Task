@@ -14,6 +14,7 @@ include("server.php");
                $level1=$row['id'];
                $level3=$row['leveltwo'];
                $level2=$row['upline'];
+               //echo $level1;
         }
  }
 
@@ -23,11 +24,11 @@ include("server.php");
 if(isset($_POST['submit']))
 {
        $name = $_POST['name'];
-       $username =trim($_POST['user']);
+       $username =trim($_POST['username']);
        $country=$_POST['country'];
        $phone = $_POST['phone'];
-       $password =$_POST['pass'];
-       $cpassword=$_POST['cpass'];
+       $password =$_POST['password'];
+       $cpassword =$_POST['password'];
        $email = $_POST['email'];
     
        
@@ -59,9 +60,7 @@ if(isset($_POST['submit']))
          if($password==$cpassword)
          {
               $upline =$_SESSION['userId'];
-             
-              $hash = password_hash($password,PASSWORD_DEFAULT);
-             
+            
               $sql = "INSERT INTO users(name, username,phone,country)VALUES('$name','$username','$phone','$country')";
               $result = mysqli_query($conn, $sql);
 
@@ -148,82 +147,17 @@ if(isset($_POST['submit']))
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Superqash sign up</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link rel="stylesheet" href="./styles.css">
+    <script defer src="./function.js"></script>
+    <script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
 </head>
-<style>
-       body {
-    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-    font-family: 'Poppins', sans-serif;
-}
-
-#form {
-    width: 330px;
-    margin: 5vh auto 0 auto;
-    padding: 20px;
-    background-color: whitesmoke;
-    border-radius: 4px;
-    font-size: 12px;
-}
-
-#form h1 {
-    color: #0f2027;
-    text-align: center;
-}
-
-#form button {
-    padding: 10px;
-    margin-top: 10px;
-    width: 100%;
-    color: white;
-    background-color: rgb(41, 57, 194);
-    border: none;
-    border-radius: 4px;
-}
-
-.input-control {
-    display: flex;
-    flex-direction: column;
-}
-
-.input-control input,select,option{
-    border: 2px solid #f0f0f0;
-	border-radius: 4px;
-	display: block;
-	font-size: 12px;
-	padding: 10px;
-	width: 100%;
-}
-select{
-    background-color: #fff;
-}
-::option{
-    outline: none;
-    border: none;
-    padding: 60px;
-}
-
-.input-control select,input:focus {
-    outline: 0;
-}
-
-.input-control.success input {
-    border-color: #09c372;
-}
-
-.input-control.error input {
-    border-color: #ff3860;
-}
-
-.input-control .error {
-    color: #ff3860;
-    font-size: 9px;
-    height: 13px;
-}
-
-</style>
 <body>
     <div class="container">
         <form id="form"  method="POST">
@@ -273,11 +207,12 @@ select{
                 <input id="password2"name="password2" type="password">
                 <div class="error"></div>
             </div>
-            <button type="submit">Sign Up</button>
+            <button type="submit" name="submit">Sign Up</button>
         </form>
     </div>
-    <script>
-       const form = document.getElementById('form');
+<script>
+
+const form = document.getElementById('form');
 const username = document.getElementById('username');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
@@ -338,7 +273,11 @@ const validateInputs = () => {
     } else if (!/^[0-9]*$/.test(phoneValue)) {
         setError(phone, 'Phone number is invalid');
         isValid = false;
-    } else {
+    }
+     else if (phoneValue.length < 10) {
+        setError(phone, 'Phone must be at least 10 characters');
+        isValid = false;
+    }  else {
         setSuccess(phone);
     }
 
@@ -387,8 +326,8 @@ const validateInputs = () => {
 
     return isValid;
 };
-};
 
-    </script>
-</body>
+         </script>
+        </body>
+      
 </html>
