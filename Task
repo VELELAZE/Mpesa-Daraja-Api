@@ -4,3 +4,5 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.querySelector('.sidebar').classList.toggle('sidebar-responsive');
     });
 });
+
+https://5d5f-2c0f-fe38-232b-ad66-cd2d-3c33-7244-f694.ngrok-free.app/superqash
