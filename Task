@@ -1,8 +1,79 @@
-// script.js
-document.addEventListener('DOMContentLoaded', (event) => {
-    document.querySelector('.menu-icon').addEventListener('click', function() {
-        document.querySelector('.sidebar').classList.toggle('sidebar-responsive');
-    });
-});
+<?php
+header("Content-Type: application/json");
 
-https://5d5f-2c0f-fe38-232b-ad66-cd2d-3c33-7244-f694.ngrok-free.app/superqash
+// Include the server configuration for database connection
+include('server.php');
+
+// Define award amounts
+$award = 150;
+$award2 = 50;
+$award3 = 30;
+
+// Decode the JSON response
+$stkCallbackResponse = file_get_contents('php://input');
+$callbackContent = json_decode($stkCallbackResponse, true);
+
+// Ensure the JSON decoding was successful
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    exit();
+}
+
+// Extract required data from the JSON response
+$ResultCode = $callbackContent['Body']['stkCallback']['ResultCode'];
+$Amount = $callbackContent['Body']['stkCallback']['CallbackMetadata']['Item'][0]['Value'];
+$MpesaReceiptNumber = $callbackContent['Body']['stkCallback']['CallbackMetadata']['Item'][1]['Value'];
+$PhoneNumber = $callbackContent['Body']['stkCallback']['CallbackMetadata']['Item'][4]['Value'];
+
+// Process the callback only if the transaction was successful
+if ($ResultCode == 0) {
+    // Retrieve the user based on the phone number
+    $sql = "SELECT * FROM signup WHERE phone='$PhoneNumber'";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result) {
+        $row = mysqli_fetch_assoc($result);
+
+        // Check if the user exists
+        if ($row) {
+            $username = $row['username'];
+            $status = $row['status'];
+            $upline = $row['upline'];
+            $level2 = $row['leveltwo'];
+            $level3 = $row['levelth'];
+
+            // Activate the user if not already active
+            if ($status != "active") {
+                $sql = "UPDATE signup SET status = 'active' WHERE phone='$PhoneNumber'";
+                $result = mysqli_query($conn, $sql);
+
+                if ($result) {
+                    // Update upline profit and balance
+                    $sql = "UPDATE signup SET profit = profit + $award, balance = balance + $award WHERE id='$upline'";
+                    $result = mysqli_query($conn, $sql);
+
+                    if ($result) {
+                        // Update level 2 profit and balance
+                        $sql1 = "UPDATE signup SET profit = profit + $award2, balance = balance + $award2 WHERE id='$level2'";
+                        $result1 = mysqli_query($conn, $sql1);
+
+                        if ($result1) {
+                            // Update level 3 profit and balance
+                            $sql2 = "UPDATE signup SET profit = profit + $award3, balance = balance + $award3 WHERE id='$level3'";
+                            $result2 = mysqli_query($conn, $sql2);
+
+                            if ($result2) {
+                                // Insert the transaction record
+                                $insert = $conn->query("INSERT INTO tinypesa (Name, ResultCode, amount, MpesaReceiptNumber, PhoneNumber) VALUES ('$username', '$ResultCode', '$Amount', '$MpesaReceiptNumber', '$PhoneNumber')");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Always respond with a 200 status code to acknowledge the webhook receipt
+http_response_code(200);
+?>
