@@ -1,3 +1,6 @@
-document.querySelector('.menu-icon').addEventListener('click', function() {
-    document.querySelector('.sidebar').classList.toggle('sidebar-responsive');
+// script.js
+document.addEventListener('DOMContentLoaded', (event) => {
+    document.querySelector('.menu-icon').addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('sidebar-responsive');
+    });
 });
