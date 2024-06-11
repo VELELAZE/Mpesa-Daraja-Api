@@ -1,4 +1,3 @@
-
 <?php
 include('server.php');
 session_start();
@@ -8,140 +7,122 @@ if (!isset($_SESSION["username"])) {
     exit();
 }
 
-
 $username = trim($_SESSION["username"]);
-$sql="SELECT * FROM signup WHERE username='$username'";
-$result=mysqli_query($conn,$sql);
+$sql = "SELECT * FROM signup WHERE username=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
 if($result){
-    $row=$result->fetch_assoc();
-    $status=$row['status'];
-    if($status !='active')
-    {
-        header("location:index.php");
+    $row = $result->fetch_assoc();
+    $status = $row['status'];
+    if($status != 'active'){
+        header("Location: index.php");
+        exit();
     }
 }
-$sql= "SELECT * FROM signup where username='$username'";
-$result=mysqli_query($conn,$sql);
-if($result)
-{
-       $row= $result->fetch_assoc();
-       $balance=$row['balance'];
-       $phone=$row['phone'];
-       $name=$row['name'];
-       $country=$row['country'];
-       if($country=='Kenya')
-       {
-             
-              $code='Ksh ';
-              $pay=number_format(100);
-       }
-       
-           if($country=='Uganda')
-           {
-          
-              $code='UGX ';
-               $pay=number_format(3000);
-           }
-           if($country=='Ghana')
-           {
-             
-              $code='GHS ';
-               $pay=number_format(9);
-           }
-           if($country=='Nigeria')
-           {
-          
-              $code='NGN ';
-               $pay=number_format(1100);
-           }    
-       }
+$stmt->close();
 
-
-
-
+$sql = "SELECT * FROM signup WHERE username=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
+if($result){
+    $row = $result->fetch_assoc();
+    $balance = $row['balance'];
+    $phone = $row['phone'];
+    $name = $row['name'];
+    $country = $row['country'];
+    switch ($country) {
+        case 'Kenya':
+            $code = 'Ksh ';
+            $pay = number_format(100);
+            break;
+        case 'Uganda':
+            $code = 'UGX ';
+            $pay = number_format(3000);
+            break;
+        case 'Ghana':
+            $code = 'GHS ';
+            $pay = number_format(9);
+            break;
+        case 'Nigeria':
+            $code = 'NGN ';
+            $pay = number_format(1100);
+            break;
+        default:
+            $code = '';
+            $pay = number_format(0);
+            break;
+    }
+}
+$stmt->close();
 
 $userId = $_SESSION['userId'];
-
-
-
- $start=0;
- $rows_per_page=20;
- // Check if there's a search query
+$start = 0;
+$rows_per_page = 20;
 $search_query = '';
+
 if (isset($_GET['search'])) {
-    $search_query = $_GET['search'];
-    $records = $conn->query("SELECT * FROM signup WHERE  upline = $userId ,status = 'inactive' AND username LIKE '%$search_query%'");
+    $search_query = trim($_GET['search']);
+    $sql = "SELECT * FROM signup WHERE upline = ? AND status = 'inactive' AND username LIKE ?";
+    $stmt = $conn->prepare($sql);
+    $search_param = "%" . $search_query . "%";
+    $stmt->bind_param("is", $userId, $search_param);
 } else {
-    $records =$conn->query("SELECT * FROM signup WHERE upline = $userId AND status = 'inactive'");
+    $sql = "SELECT * FROM signup WHERE upline = ? AND status = 'inactive'";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $userId);
 }
 
-        
+$stmt->execute();
+$records = $stmt->get_result();
+$nr_of_rows = $records->num_rows;
+$pages = ceil($nr_of_rows / $rows_per_page);
 
-         
-         $nr_of_rows= $records->num_rows;
-         $pages=ceil($nr_of_rows/$rows_per_page);
+if (isset($_GET['page-nr'])) {
+    $page = $_GET['page-nr'] - 1;
+    $start = $page * $rows_per_page;
+} else {
+    $page = 0;
+}
 
-         if(isset($_GET['page-nr']))
-         {
-              $page = $_GET['page-nr'] - 1;
-              $start = $page * $rows_per_page;
-         }
-         else{
-              $page=0;
-         }
-
-
-      
+$stmt->close();
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-       <meta charset="utf-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Dashboard</title>
-       <!-- Open sas Font-->
-       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-       <!--Material icons-->
-       <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
-      rel="stylesheet">
-      <!--Bootstrap icons-->
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-       <!-- Custom css -->
-       <!-- ICONS -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- STYLESHEET -->
-       <!-- Custom css -->
-        
-       <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <style>
-   
-       
-
- .error{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background:wheat;
-        padding: 50px;
-        border-radius:6px;
-     }
-     .error h2{
-        color: darkblue;
-        padding:10px;
-        font-size: 16px;
-        text-align:center;
-     }
-
-       @media(max-width: 600px)
-       {
-        body{
-            display:block;
-        }
-         .table-container{
+.error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: wheat;
+    padding: 50px;
+    border-radius: 6px;
+}
+.error h2 {
+    color: darkblue;
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+}
+@media (max-width: 600px) {
+    body {
+        display: block;
+    }
+    .table-container {
         width: 100%;
         max-width: 900px;
         margin: 0 auto;
@@ -149,171 +130,102 @@ if (isset($_GET['search'])) {
         padding: 5px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .table-wrapper{
+    .table-wrapper {
         overflow-x: auto;
         overflow-y: hidden;
     }
-    .styled-table{
-    width: 100%;
-  
-    border-collapse: collapse;
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
     }
-       
-       }
-      
+}
 </style>
 <body style="background-color:skyblue;">
-       <div class="grid-container">
-<?php
-include'header.php';
-include'side.php';
-
-?>
-<!--Main-->
-<main class="main-container">
-
-<?php
-if($pages==0)
-{
-    ?>
-    <div class="error">
-        <h2>Oops ! <?php echo $username ?>, You don't have innactive level one downlines. Kindly keep sharing your Referral link to let more people join. This will help you earn good money daily. Thank you <?php echo $username; ?></h2>
+    <div class="grid-container">
+        <?php include 'header.php'; include 'side.php'; ?>
+        <!-- Main -->
+        <main class="main-container">
+            <?php if ($pages == 0): ?>
+                <div class="error">
+                    <h2>Oops! <?php echo $username; ?>, You don't have inactive level one downlines. Kindly keep sharing your Referral link to let more people join. This will help you earn good money daily. Thank you <?php echo $username; ?>.</h2>
+                </div>
+            <?php else: ?>
+                <section class="table-container">
+                    <div class="table-wrapper">
+                        <form method="GET" action="">
+                            <div class="upper">
+                                <input type="text" name="search" placeholder="Search by username" value="<?php echo htmlspecialchars($search_query); ?>">
+                                <button type="submit">Search</button>
+                            </div>
+                        </form>
+                        <table class="styled-table">
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Username</th>
+                                <th>Country</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                            </tr>
+                            <?php
+                            $query = "SELECT * FROM signup WHERE upline = ? AND status = 'inactive' LIMIT ?, ?";
+                            $stmt = $conn->prepare($query);
+                            $stmt->bind_param("iii", $userId, $start, $rows_per_page);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            $id = $start + 1;
+                            while ($row = $result->fetch_assoc()) {
+                                $status = $row['status'];
+                                $date1 = $row['date'];
+                                $dateObj = DateTime::createFromFormat('Y-m-d H:i:s', $date1);
+                                $date = $dateObj->format('j,F');
+                                $_SESSION['status'] = $status;
+                                if ($status == "active") {
+                                    $award = $pay;
+                                } else {
+                                    $award = '0';
+                                }
+                                echo "<tr>";
+                                echo "<td>$id</td>";
+                                echo "<td>$date</td>";
+                                echo "<td>{$row['username']}</td>";
+                                echo "<td>{$row['country']}</td>";
+                                echo "<td>{$row['phone']}</td>";
+                                echo "<td>";
+                                if ($row['status'] === 'active') {
+                                    echo "<button class='s'>Active</button>";
+                                } else {
+                                    echo "<button class='p'>Inactive</button>";
+                                }
+                                echo "</td>";
+                                echo "</tr>";
+                                $id++;
+                            }
+                            $stmt->close();
+                            ?>
+                        </table>
+                        <div class="page-info">
+                            <?php $current = $page + 1; ?>
+                            Showing <?php echo $current . " of " . $pages ?> pages
+                        </div>
+                        <div class="pagination" style="margin-bottom: 20px;">
+                            <a href="?page-nr=1<?php if ($search_query) echo '&search=' . urlencode($search_query); ?>">First</a>
+                            <?php if ($page > 0): ?>
+                                <a href="?page-nr=<?php echo $page; ?><?php if ($search_query) echo '&search=' . urlencode($search_query); ?>">Previous</a>
+                            <?php else: ?>
+                                <a>Previous</a>
+                            <?php endif; ?>
+                            <?php if ($page < $pages - 1): ?>
+                                <a href="?page-nr=<?php echo $page + 2; ?><?php if ($search_query) echo '&search=' . urlencode($search_query); ?>">Next</a>
+                            <?php else: ?>
+                                <a>Next</a>
+                            <?php endif; ?>
+                            <a href="?page-nr=<?php echo $pages; ?><?php if ($search_query) echo '&search=' . urlencode($search_query); ?>">Last</a>
+                        </div>
+                    </div>
+                </section>
+            <?php endif; ?>
+        </main>
+        <!-- End Main -->
     </div>
-    <?php
-}
-?>
-
-    <?php
-    if($pages!=0)
-    {
-    ?>
-    
-    <section class="table-container">
-       <div class="table-wrapper">
-         <form method="GET" action="">
-                  <div class="upper">
-                  <input type="text" name="search" placeholder="Search by username" value="<?php echo $search_query; ?>">
-                    <button type="submit">Search</button>
-                  </div>
-                    
-                </form>
-<table class="styled-table">
-       
-        <tr>
-              
-            <th>ID</th>
-            <th>Date</th>
-            <th>Username</th>
-            <th>Country</th>
-            <th>Phone</th>
-            
-            <th>Status</th>
-        </tr>
-        <?php
-        $userId = $_SESSION['userId'];
-        
-        $query = "SELECT * FROM signup where upline = $userId  AND status = 'inactive' LIMIT $start,$rows_per_page";
-        
-        $result = $conn->query($query);
-        $id=$start+1;
-        // Check if the query executed successfully
-        if ($result) {
-            // Fetch associative array
-            while ($row = $result->fetch_assoc()) {
-               $status =$row['status'];
-                $date1=$row['date'];
-
-               $dateObj=DateTime::createFromFormat('Y-m-d H:i:s',$date1);
-
-$date=$dateObj->format('j,F');
-               $_SESSION=$status;
-                    if($status=="active")
- {
-                            $award=$pay;
-                           
-                     }
-                     else{
-                            $award=' 0';
-                     }
-                     //id for the table we are displaying
-                // Display user data in table rows
-                echo "<tr>";
-                echo "<td>$id</td>";
-                echo "<td>$date</td>";
-                echo "<td>{$row['username']}</td>";
-                echo "<td>{$row['country']}</td>";
-                echo "<td>{$row['phone']}</td>";
-               
-                echo "<td>";
-                if ($row['status'] === 'active') {
-                    echo "<button class='s'>Active</button>";
-                } else {
-                    echo "<button class='p'>Inactive</button>";
-                }
-                echo "</td>";
-                echo "</tr>";
-                $id++;
-            }
-            // Free result set
-            $result->free();
-        } else {
-            echo "<tr><td colspan='3'>Error: " . $conn->error . "</td></tr>";
-        }
-
-
-
-        
-        // Close connection
-        $conn->close();
-        ?>
-        </table>
-        
-          <div class="page-info">
-                    <?php $current = $page + 1; ?>
-                    Showing <?php echo $current." of ".$pages ?> pages
-                </div>
-                <div class="pagination" style="margin-bottom: 20px;">
-                    <a href="?page-nr=1<?php if ($search_query) echo '&search='.$search_query; ?>">First</a>
-                    <?php
-                    if (isset($_GET['page-nr']) && $_GET['page-nr'] > 1) {
-                        ?>
-                        <a href="?page-nr=<?php echo $_GET['page-nr']-1; ?><?php if ($search_query) echo '&search='.$search_query; ?>">Previous</a>
-                        <?php
-                    } else {
-                        ?>
-                        <a>Previous</a>
-                        <?php
-                    }
-                    ?>
-                    <?php
-                    if (!isset($_GET['page-nr'])) {
-                        ?>
-                        <a href="?page-nr=2<?php if ($search_query) echo '&search='.$search_query; ?>">Next</a>
-                        <?php
-                    } else {
-                        if ($_GET['page-nr'] >= $pages) {
-                            ?>
-                            <a>Next</a>
-                            <?php
-                        } else {
-                            ?>
-                            <a href="?page-nr=<?php echo $_GET['page-nr'] + 1; ?><?php if ($search_query) echo '&search='.$search_query; ?>">Next</a>
-                            <?php
-                        }
-                    }
-                    ?>
-                    <a href="?page-nr=<?php echo $pages; ?><?php if ($search_query) echo '&search='.$search_query; ?>">Last</a>
-                </div>
-            </div>
-        </section>
-       <?php
-}
-?> 
-    </main>
-    <!--End main-->
-</div>
-
-</body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js" integrity="sha512-8Z5++K1rB3U+USaLKG6oO8uWWBhdYsM3hmdirnOEWp8h2B1aOikj5zBzlXs8QOrvY9OxEnD2QDkbSKKpfqcIWw==" crossorigin="anonymous"></script>
-<script src="js/script.js"></script>
-</html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js" integrity="sha512-8
