@@ -1,311 +1,83 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+include'../server.php';
+include 'configs.php';
+  $amount = '2';
+  $_SESSION['amount']=$amount;
+  $currency = "KES";
+  $email=$mail."@gmail.com";
+  $_SESSION['mail']=$email;
+  $_SESSION['amount']=$amount;
 
-// Include necessary files
-require_once 'configs.php'; // Assuming this file contains database connection settings
-require_once '../server.php'; // Assuming this file contains session handling and database connection
-require_once '../PHPMailer/PHPMailerAutoload.php'; // Assuming this is where PHPMailer is autoloaded
-
-// Function to send email using PHPMailer
-function sendMail($recipientEmail, $recipientName, $subject, $body) {
-    $mail = new PHPMailer;
-    $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = 'pesahelaonline@gmail.com';
-    $mail->Password = 'newnljievgivqpln';
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port = 465;
-    $mail->setFrom('pesahelaonline@gmail.com', 'SUPERQASH AGENCIES');
-    $mail->addAddress($recipientEmail, $recipientName);
-    $mail->isHTML(true);
-    $mail->Subject = $subject;
-    $mail->Body = $body;
-
-    if (!$mail->send()) {
-        error_log('Email could not be sent.');
-        error_log('Mailer Error: ' . $mail->ErrorInfo);
-        return false;
-    } else {
-        return true;
-    }
+/*$sql = "SELECT * FROM signup WHERE username = '$username'";
+$result = mysqli_query($conn,$sql);
+if($result)
+{
+  $row = $result->fetch_assoc();
+  $status = $row['status'];
+  if($status=="active")
+  {
+    header("location:dashboard.php");
+  }
 }
+*/
+  ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Please wait..</title>
+</head>
+<style>
+       body, html{
+              height: 100%;
+              margin: 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-family: Aria, sans-serif;
+              background-color: darkgray;
 
-// Retrieve email and amount from session
-session_start();
-if (isset($_SESSION['mail'], $_SESSION['amount'])) {
-    $email_address = $_SESSION['mail'];
-    $Amount = $_SESSION['amount'];
-} else {
-    // Handle session variables not set
-    header("Location: index.php");
-    exit();
-}
+       }
+       .lading{
+              text-align: center;
+       }
+       .loading p{
+              font-size: 24px;
+              color: #333;
+       }
+</style>
+<body>
+       <div class="loading">
+              <p>Please wait...</p>
+       </div>
+        <script type="text/javascript">
+    const paymentForm = document.getElementById('paymentForm');
+    paymentForm.addEventListener("submit", payWithPaystack, false);
 
-// Verify payment reference from Paystack API
-if (isset($_GET['reference'])) {
-    $referenceId = $_GET['reference'];
-    if ($referenceId == '') {
-        header("Location: index.php");
-        exit();
-    }
-
-    // Make cURL request to Paystack API
-    $curl = curl_init();
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://api.paystack.co/transaction/verify/$referenceId",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "GET",
-        CURLOPT_HTTPHEADER => array(
-            "Authorization: Bearer $SecretKey",
-            "Cache-Control: no-cache",
-        ),
-    ));
-
-    $response = curl_exec($curl);
-    $err = curl_error($curl);
-    curl_close($curl);
-
-    if ($err) {
-        error_log("cURL Error #: $err");
-        echo "cURL Error #: $err";
-    } else {
-        $data = json_decode($response);
-
-        if ($data->status == true) {
-            // Fetch user details from database
-            $stmt = $conn->prepare("SELECT * FROM signup WHERE email=?");
-            $stmt->bind_param("s", $email_address);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-                $username = $row['username'];
-                $upline = $row['upline'];
-                $level2 = $row['leveltwo'];
-                $level3 = $row['levelth'];
-            } else {
-                // User not found in database
-                http_response_code(404);
-                exit();
-            }
-
-            // Function to get country currency code
-            function getCurrencyCode($country) {
-                switch ($country) {
-                    case 'Kenya':
-                        return 'KES';
-                    case 'Uganda':
-                        return 'UGX';
-                    case 'Ghana':
-                        return 'GHS';
-                    case 'Nigeria':
-                        return 'NGN';
-                    default:
-                        return '';
-                }
-            }
-
-            // Fetch upline details
-            function fetchUserDetails($conn, $userId) {
-                $stmt = $conn->prepare("SELECT * FROM signup WHERE id = ?");
-                $stmt->bind_param("i", $userId);
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                if ($result->num_rows > 0) {
-                    return $result->fetch_assoc();
-                } else {
-                    return null;
-                }
-            }
-
-            // Process user activation and bonuses
-            if ($status != "active" && $Amount == 2) {
-                // Activate the user
-                $stmt = $conn->prepare("UPDATE signup SET status = 'active' WHERE username=?");
-                $stmt->bind_param("s", $username);
-                if ($stmt->execute()) {
-                    // Bonus calculation and update for upline
-                    $uplineDetails = fetchUserDetails($conn, $upline);
-                    if ($uplineDetails) {
-                        $country = $uplineDetails['country'];
-                        $mail1 = $uplineDetails['email'];
-                        $user1 = $uplineDetails['username'];
-                        $currencyCode1 = getCurrencyCode($country);
-                        $award = ($country == 'Kenya') ? 100 : (($country == 'Uganda') ? 3000 : (($country == 'Ghana') ? 9 : (($country == 'Nigeria') ? 1100 : 0)));
-
-                        // Update profit and balance for upline
-                        $stmt = $conn->prepare("UPDATE signup SET profit = profit + ?, balance = balance + ? WHERE id=?");
-                        $stmt->bind_param("iii", $award, $award, $upline);
-                        if ($stmt->execute()) {
-                            // Send email to upline
-                            $subject = "$currencyCode1 $award Level 1 Bonus from $username";
-                            $body = "
-                                <div style=\"font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;\">
-                                    <div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0;\">
-                                        <div style=\"text-align: center; padding: 10px 0; border-bottom: 1px solid #e0e0e0;\">
-                                            <h1 style=\"margin: 0; font-size: 24px; color: #333333;\">Hooray🎉🎉</h1>
-                                        </div>
-                                        <div style=\"padding: 20px;\">
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Congratulations! You have received a $currencyCode1 $award Level 1 Bonus from $username.</p>
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Thank you for choosing SUPERQASH AGENCIES. Your continued support and participation are greatly appreciated.</p>
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">To view your dashboard and manage your earnings, please <a href=\"https://pesahela.lovestoblog.com/superqash/dashboard.php\" style=\"color: #1a73e8; text-decoration: none;\">click here</a>.</p>
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">If you have any questions or need assistance, feel free to contact our support team.</p>
-                                        </div>
-                                        <div style=\"text-align: center; padding: 10px 0; border-top: 1px solid #e0e0e0; margin-top: 20px;\">
-                                            <p style=\"font-size: 12px; color: #999999;\">Best regards,<br>The SUPERQASH AGENCIES Team</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ";
-                            if (sendMail($mail1, $user1, $subject, $body)) {
-                                echo "Email sent to upline successfully.<br>";
-                            } else {
-                                echo "Failed to send email to upline.<br>";
-                            }
-                        }
-                    }
-
-                    // Bonus calculation and update for level 2
-                    // Repeat similar steps for level 2 and level 3 as needed
-
-                    // Level 3 bonus
-                    $level3Details = fetchUserDetails($conn, $level3);
-                    if ($level3Details) {
-                        $country = $level3Details['country'];
-                        $mail3 = $level3Details['email'];
-                        $user3 = $level3Details['username'];
-                        $currencyCode3 = getCurrencyCode($country);
-                        $award3 = ($country == 'Kenya') ? 20 : (($country == 'Uganda') ? 500 : (($country == 'Ghana') ? 2 : (($country == 'Nigeria') ? 200 : 0)));
-
-                        // Update profit and balance for level 3
-                        $stmt = $conn->prepare("UPDATE signup SET profit = profit + ?, balance = balance + ? WHERE id=?");
-                        $stmt->bind_param("iii", $award3, $award3, $level3);
-                        if ($stmt->execute()) {
-                            // Send email to level
-// Update profit and balance for level 3
-                        $stmt = $conn->prepare("UPDATE signup SET profit = profit + ?, balance = balance + ? WHERE id=?");
-                        $stmt->bind_param("iii", $award3, $award3, $level3);
-                        if ($stmt->execute()) {
-                            // Send email to level 3
-                            $subject = "$currencyCode3 $award3 Level 3 Bonus from $username";
-                            $body = "
-                                <div style=\"font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;\">
-                                    <div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0;\">
-                                        <div style=\"text-align: center; padding: 10px 0; border-bottom: 1px solid #e0e0e0;\">
-                                            <h1 style=\"margin: 0; font-size: 24px; color: #333333;\">Hooray🎉🎉</h1>
-                                        </div>
-                                        <div style=\"padding: 20px;\">
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Congratulations! You have received a $currencyCode3 $award3 Level 3 Bonus from $username.</p>
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Thank you for choosing SUPERQASH AGENCIES. Your continued support and participation are greatly appreciated.</p>
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">To view your dashboard and manage your earnings, please <a href=\"https://pesahela.lovestoblog.com/superqash/dashboard.php\" style=\"color: #1a73e8; text-decoration: none;\">click here</a>.</p>
-                                            <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">If you have any questions or need assistance, feel free to contact our support team.</p>
-                                        </div>
-                                        <div style=\"text-align: center; padding: 10px 0; border-top: 1px solid #e0e0e0; margin-top: 20px;\">
-                                            <p style=\"font-size: 12px; color: #999999;\">Best regards,<br>The SUPERQASH AGENCIES Team</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ";
-                            if (sendMail($mail3, $user3, $subject, $body)) {
-                                echo "Email sent to level 3 successfully.<br>";
-                            } else {
-                                echo "Failed to send email to level 3.<br>";
-                            }
-                        }
-
-                        // Update profit and balance for level 2
-                        $level2Details = fetchUserDetails($conn, $level2);
-                        if ($level2Details) {
-                            $country = $level2Details['country'];
-                            $mail2 = $level2Details['email'];
-                            $user2 = $level2Details['username'];
-                            $currencyCode2 = getCurrencyCode($country);
-                            $award2 = ($country == 'Kenya') ? 30 : (($country == 'Uganda') ? 1000 : (($country == 'Ghana') ? 3 : (($country == 'Nigeria') ? 310 : 0)));
-
-                            // Update profit and balance for level 2
-                            $stmt = $conn->prepare("UPDATE signup SET profit = profit + ?, balance = balance + ? WHERE id=?");
-                            $stmt->bind_param("iii", $award2, $award2, $level2);
-                            if ($stmt->execute()) {
-                                // Send email to level 2
-                                $subject = "$currencyCode2 $award2 Level 2 Bonus from $username";
-                                $body = "
-                                    <div style=\"font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;\">
-                                        <div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0;\">
-                                            <div style=\"text-align: center; padding: 10px 0; border-bottom: 1px solid #e0e0e0;\">
-                                                <h1 style=\"margin: 0; font-size: 24px; color: #333333;\">Hooray🎉🎉</h1>
-                                            </div>
-                                            <div style=\"padding: 20px;\">
-                                                <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Congratulations! You have received a $currencyCode2 $award2 Level 2 Bonus from $username.</p>
-                                                <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Thank you for choosing SUPERQASH AGENCIES. Your continued support and participation are greatly appreciated.</p>
-                                                <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">To view your dashboard and manage your earnings, please <a href=\"https://pesahela.lovestoblog.com/superqash/dashboard.php\" style=\"color: #1a73e8; text-decoration: none;\">click here</a>.</p>
-                                                <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">If you have any questions or need assistance, feel free to contact our support team.</p>
-                                            </div>
-                                            <div style=\"text-align: center; padding: 10px 0; border-top: 1px solid #e0e0e0; margin-top: 20px;\">
-                                                <p style=\"font-size: 12px; color: #999999;\">Best regards,<br>The SUPERQASH AGENCIES Team</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ";
-                                if (sendMail($mail2, $user2, $subject, $body)) {
-                                    echo "Email sent to level 2 successfully.<br>";
-                                } else {
-                                    echo "Failed to send email to level 2.<br>";
-                                }
-                            }
-                        }
-
-                        // Send email to admin
-                        $mail4 = "veleladavid1@gmail.com"; // Assuming this is the admin's email
-                        $user4 = "ADMIN";
-                        $subject = "Kes 50 Admin Bonus from $username";
-                        $body = "
-                            <div style=\"font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;\">
-                                <div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0;\">
-                                    <div style=\"text-align: center; padding: 10px 0; border-bottom: 1px solid #e0e0e0;\">
-                                        <h1 style=\"margin: 0; font-size: 24px; color: #333333;\">Hooray🎉🎉</h1>
-                                    </div>
-                                    <div style=\"padding: 20px;\">
-                                        <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">You have received a Kes 50 Bonus from $username.</p>
-                                        <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">Thank you for choosing SUPERQASH AGENCIES. Your continued support and participation are greatly appreciated.</p>
-                                        <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">To view your dashboard and manage your earnings, please <a href=\"https://pesahela.lovestoblog.com/superqash/dashboard.php\" style=\"color: #1a73e8; text-decoration: none;\">click here</a>.</p>
-                                        <p style=\"font-size: 16px; color: #555555; line-height: 1.5;\">If you have any questions or need assistance, feel free to contact our support team.</p>
-                                    </div>
-                                    <div style=\"text-align: center; padding: 10px 0; border-top: 1px solid #e0e0e0; margin-top: 20px;\">
-                                        <p style=\"font-size: 12px; color: #999999;\">Best regards,<br>The SUPERQASH AGENCIES Team</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ";
-                        if (sendMail($mail4, $user4, $subject, $body)) {
-                            echo "Email sent to admin successfully.<br>";
-                        } else {
-                            echo "Failed to send email to admin.<br>";
-                        }
-
-                        echo "Account Activated successfully!";
-                    }
-                }
-            } else {
-                echo "User status is already active or amount is not 2.";
-            }
-        } else {
-            echo "Transaction verification failed: " . $data
-echo "Transaction verification failed: " . $data->message;
+    function payWithPaystack(e) {
+      e.preventDefault();
+      let handler = PaystackPop.setup({
+        key: '<?php echo $PublicKey; ?>', // Replace with your public key
+        email: '<?php echo $email; ?>',
+        amount: <?php echo $amount; ?>*100 ,
+        currency: '<?php echo $currency; ?>', // Use GHS for Ghana Cedis or USD for US Dollars or KES for Kenya Shillings
+        ref: '' + Math.floor((Math.random() * 1000000000) + 1), // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
+        // label: "Optional string that replaces customer email"
+        onClose: function() {
+          alert('Transaction was not completed, window closed.');
+        },
+        callback: function(response) {
+          let message = 'Payment complete! Reference: ' + response.reference;
+         
+          window.location.href = "paystack/verify_transaction.php?reference=" + response.reference;
         }
-    }
-} else {
-    echo "Reference ID not provided or invalid.";
-}
+      });
 
-// Close the database connection
-$conn->close();
-?>
+      handler.openIframe();
+    }
+  </script>
+
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+</body>
+</html>
