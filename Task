@@ -1,83 +1,66 @@
 <?php
-include'../server.php';
+include '../server.php';
 include 'configs.php';
-  $amount = '2';
-  $_SESSION['amount']=$amount;
-  $currency = "KES";
-  $email=$mail."@gmail.com";
-  $_SESSION['mail']=$email;
-  $_SESSION['amount']=$amount;
 
-/*$sql = "SELECT * FROM signup WHERE username = '$username'";
-$result = mysqli_query($conn,$sql);
-if($result)
-{
-  $row = $result->fetch_assoc();
-  $status = $row['status'];
-  if($status=="active")
-  {
-    header("location:dashboard.php");
-  }
-}
-*/
-  ?>
+$amount = '2';
+$_SESSION['amount'] = $amount;
+$currency = "KES";
+$email = $mail . "@gmail.com";
+$_SESSION['mail'] = $email;
+$_SESSION['amount'] = $amount;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Please wait..</title>
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Please wait..</title>
 <style>
-       body, html{
-              height: 100%;
-              margin: 0;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              font-family: Aria, sans-serif;
-              background-color: darkgray;
+body, html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background-color: darkgray;
+}
 
-       }
-       .lading{
-              text-align: center;
-       }
-       .loading p{
-              font-size: 24px;
-              color: #333;
-       }
+.loading {
+    text-align: center;
+}
+
+.loading p {
+    font-size: 24px;
+    color: #333;
+}
 </style>
+</head>
 <body>
-       <div class="loading">
-              <p>Please wait...</p>
-       </div>
-        <script type="text/javascript">
-    const paymentForm = document.getElementById('paymentForm');
-    paymentForm.addEventListener("submit", payWithPaystack, false);
+<div class="loading">
+    <p>Please wait...</p>
+</div>
 
-    function payWithPaystack(e) {
-      e.preventDefault();
-      let handler = PaystackPop.setup({
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    let handler = PaystackPop.setup({
         key: '<?php echo $PublicKey; ?>', // Replace with your public key
         email: '<?php echo $email; ?>',
-        amount: <?php echo $amount; ?>*100 ,
-        currency: '<?php echo $currency; ?>', // Use GHS for Ghana Cedis or USD for US Dollars or KES for Kenya Shillings
-        ref: '' + Math.floor((Math.random() * 1000000000) + 1), // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
-        // label: "Optional string that replaces customer email"
+        amount: <?php echo $amount; ?> * 100,
+        currency: '<?php echo $currency; ?>',
+        ref: '' + Math.floor((Math.random() * 1000000000) + 1),
         onClose: function() {
-          alert('Transaction was not completed, window closed.');
+            alert('Transaction was not completed, window closed.');
         },
         callback: function(response) {
-          let message = 'Payment complete! Reference: ' + response.reference;
-         
-          window.location.href = "paystack/verify_transaction.php?reference=" + response.reference;
+            let message = 'Payment complete! Reference: ' + response.reference;
+            window.location.href = "paystack/verify_transaction.php?reference=" + response.reference;
         }
-      });
+    });
 
-      handler.openIframe();
-    }
-  </script>
-
-  <script src="https://js.paystack.co/v1/inline.js"></script>
+    handler.openIframe();
+});
+</script>
 </body>
 </html>
