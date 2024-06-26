@@ -1,66 +1,38 @@
-<?php
-include '../server.php';
-include 'configs.php';
-
-$amount = '2';
-$_SESSION['amount'] = $amount;
-$currency = "KES";
-$email = $mail . "@gmail.com";
-$_SESSION['mail'] = $email;
-$_SESSION['amount'] = $amount;
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Please wait..</title>
-<style>
-body, html {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    background-color: darkgray;
-}
-
-.loading {
-    text-align: center;
-}
-
-.loading p {
-    font-size: 24px;
-    color: #333;
-}
-</style>
-</head>
-<body>
-<div class="loading">
-    <p>Please wait...</p>
-</div>
-
-<script src="https://js.paystack.co/v1/inline.js"></script>
-<script type="text/javascript">
-document.addEventListener('DOMContentLoaded', function() {
-    let handler = PaystackPop.setup({
-        key: '<?php echo $PublicKey; ?>', // Replace with your public key
-        email: '<?php echo $email; ?>',
-        amount: <?php echo $amount; ?> * 100,
-        currency: '<?php echo $currency; ?>',
-        ref: '' + Math.floor((Math.random() * 1000000000) + 1),
-        onClose: function() {
-            alert('Transaction was not completed, window closed.');
-        },
-        callback: function(response) {
-            let message = 'Payment complete! Reference: ' + response.reference;
-            window.location.href = "paystack/verify_transaction.php?reference=" + response.reference;
+function convertToStandardForm($input) {
+    // Convert input to float to handle decimal numbers
+    $input = floatval($input);
+    
+    // Initialize variables for coefficient and exponent
+    $coefficient = $input;
+    $exponent = 0;
+    
+    // Reduce the number to a range between 1 and 10
+    while ($coefficient >= 10 || $coefficient < 1) {
+        if ($coefficient >= 10) {
+            $coefficient /= 10;
+            $exponent++;
+        } elseif ($coefficient < 1) {
+            $coefficient *= 10;
+            $exponent--;
         }
-    });
+    }
+    
+    // Determine the multiplier for the exponent
+    $multiplier = pow(10, $exponent);
+    
+    return array('coefficient' => $coefficient, 'multiplier' => $multiplier);
+}
 
-    handler.openIframe();
-});
-</script>
-</body>
-</html>
+// Example usage:
+$input = 3000;
+$result = convertToStandardForm($input);
+
+$coefficient = $result['coefficient'];
+$multiplier = $result['multiplier'];
+
+echo "Coefficient: " . $coefficient . "\n";
+echo "Multiplier: " . $multiplier . "\n";
+
+// Output:
+// Coefficient: 3
+// Multiplier: 1000
