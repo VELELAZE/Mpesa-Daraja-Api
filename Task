@@ -10,3 +10,13 @@
         </div>
     </div>
 </footer>
+
+<style>
+    footer.fixed-bottom {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030; /* Ensure this is higher than your main content z-index */
+    }
+</style>
