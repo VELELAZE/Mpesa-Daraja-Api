@@ -1,38 +1,15 @@
-function convertToStandardForm($input) {
-    // Convert input to float to handle decimal numbers
-    $input = floatval($input);
-    
-    // Initialize variables for coefficient and exponent
-    $coefficient = $input;
-    $exponent = 0;
-    
-    // Reduce the number to a range between 1 and 10
-    while ($coefficient >= 10 || $coefficient < 1) {
-        if ($coefficient >= 10) {
-            $coefficient /= 10;
-            $exponent++;
-        } elseif ($coefficient < 1) {
-            $coefficient *= 10;
-            $exponent--;
-        }
-    }
-    
-    // Determine the multiplier for the exponent
-    $multiplier = pow(10, $exponent);
-    
-    return array('coefficient' => $coefficient, 'multiplier' => $multiplier);
-}
-
-// Example usage:
-$input = 3000;
-$result = convertToStandardForm($input);
-
-$coefficient = $result['coefficient'];
-$multiplier = $result['multiplier'];
-
-echo "Coefficient: " . $coefficient . "\n";
-echo "Multiplier: " . $multiplier . "\n";
-
-// Output:
-// Coefficient: 3
-// Multiplier: 1000
+ 
+ <div class="container-fluid pt-4 px-4" style="margin-bottom:0;">
+                <div class="  p-4" style="background-color: #060241; border-radius:3px">
+                    <div class="row">
+                        <div class="col-12 col-sm-8 text-center text-sm-start">
+                           <p style="font-size: 12px;">&copy; <a href=""style="color: blanchedalmond;">SuperQash Agencies</a>, All Right Reserved. </p> 
+                        </div>
+                        <div class="col-12 col-sm-6 text-center text-sm-end">
+                            <p style="font-size: 12px;">Designed By <a href="" style="color: blanchedalmond;">Velelaze Softwares</a></p>
+                         
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <a href="#"style="border-radius:100%; height:50px; width:50px; display:flex; justify-content:center;align-items:center;" class="btn btn-lg btn-info btn-lg-circle back-to-top"><i class="bi bi-arrow-up" style="font-size: 19px;"></i></a>
