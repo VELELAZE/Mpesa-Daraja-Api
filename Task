@@ -1,31 +1,10 @@
 <?php
+
 include 'function.php';
 include 'config.php';
-
-if(isset($_POST['pay']))
+if(isset($_GET['check']))
 {
-  $phone = $_POST['phone'];
-  $amount = $_POST['amount'];
-  $accountNumber = $_POST['accountNumber'];
-  
-  $result = makePayment($api_key, $email, $account_id, $amount, $phone, $accountNumber);
-  
-  // Check if payment initiation was successful
-  if(isset($result->success) && $result->success == '200')
-  {
-    // Payment initiation successful, capture transaction_request_id
-    $transaction_request_id = $result->transaction_request_id;
-    
-    // Store $transaction_request_id in a variable or session if needed
-    $check = $transaction_request_id;
-    
-    // Redirect or handle further processing
-    // echo '<script>window.location.href="index.php?success=Payment initiated successfully, Please enter your pin to complete the transaction"</script>';
-  }
-  else
-  {
-    // Payment initiation failed
-    // echo '<script>window.location.href="index.php?error=Failed to initiate payment"</script>';
-  }
+$transaction_request_id = $_GET['check'];
 }
-?>
+
+echo verifyPayment($api_key, $email, $transaction_request_id);
