@@ -22,13 +22,20 @@
     // Function to show the <a> tag after 15 seconds
     function showLink() {
       document.getElementById('myLink').style.display = 'inline'; // Display the <a> tag
+      localStorage.setItem('linkShownTime', Date.now()); // Store current timestamp in localStorage
     }
 
-    // Delay in milliseconds (15 seconds = 15000 milliseconds)
+    // Check if the link was shown less than 15 seconds ago
+    const linkShownTime = localStorage.getItem('linkShownTime');
+    const currentTime = Date.now();
     const delay = 15000;
 
-    // Execute showLink function after the specified delay
-    setTimeout(showLink, delay);
+    if (!linkShownTime || (currentTime - linkShownTime > delay)) {
+      setTimeout(showLink, delay);
+    } else {
+      // If less than 15 seconds have passed since last show, display immediately
+      document.getElementById('myLink').style.display = 'inline';
+    }
   </script>
 </body>
 </html>
