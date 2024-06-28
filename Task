@@ -10,22 +10,39 @@ if(isset($_GET['check']))
     $response = verifyPayment($api_key, $email, $transaction_request_id);
     
     // Check if response is valid
-    if($response !== null && isset($response->TransactionStatus) && isset($response->TransactionReceipt) && isset($response->TransactionCode))
+    if($response !== null && isset($response->TransactionStatus))
     {
-        // Store values in variables
-        $transactionStatus = $response->TransactionStatus;
-        $transactionReceipt = $response->TransactionReceipt;
-        $transactionCode = $response->TransactionCode;
-        
-        // Echo the values separately
-        echo "Transaction Status: " . $transactionStatus . "<br>";
-        echo "Transaction Receipt: " . $transactionReceipt . "<br>";
-        echo "Transaction Code: " . $transactionCode . "<br>";
+        // Check if transaction was cancelled
+        if($response->TransactionStatus == 'Cancelled')
+        {
+            echo "Transaction was cancelled by the user.";
+        }
+        else
+        {
+            // Transaction is not cancelled, proceed to display details
+            if(isset($response->TransactionStatus) && isset($response->TransactionReceipt) && isset($response->TransactionCode))
+            {
+                // Store values in variables
+                $transactionStatus = $response->TransactionStatus;
+                $transactionReceipt = $response->TransactionReceipt;
+                $transactionCode = $response->TransactionCode;
+                
+                // Echo the values separately
+                echo "Transaction Status: " . $transactionStatus . "<br>";
+                echo "Transaction Receipt: " . $transactionReceipt . "<br>";
+                echo "Transaction Code: " . $transactionCode . "<br>";
+            }
+            else
+            {
+                // Handle case where response is missing expected fields
+                echo "Error: Unable to retrieve transaction details.";
+            }
+        }
     }
     else
     {
-        // Handle case where response is not as expected
-        echo "Error: Unable to retrieve transaction details.";
+        // Handle case where response is invalid or empty
+        echo "Error: Unable to verify transaction status.";
     }
 }
 else
