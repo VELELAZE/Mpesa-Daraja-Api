@@ -1,44 +1,34 @@
-<?php
-include 'function.php';
-include 'config.php';
-
-if(isset($_GET['check']))
-{
-    $transaction_request_id = $_GET['check'];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Show <a> tag after delay</title>
+<style>
+  /* Optional CSS for hiding the <a> tag initially */
+  #myLink {
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <!-- Placeholder text to show before displaying the <a> tag -->
+  <p>Loading...</p>
   
-    // Call verifyPayment function
-    $response = verifyPayment($api_key, $email, $transaction_request_id);
-    
-    // Check if response is valid
-    if($response !== null && isset($response->TransactionStatus))
-    {
-        // Check if transaction status is Completed
-        if($response->TransactionStatus == 'Completed')
-        {
-            // Display and store variables
-            $transactionStatus = $response->TransactionStatus;
-            $transactionReceipt = isset($response->TransactionReceipt) ? $response->TransactionReceipt : 'N/A';
-            $transactionCode = isset($response->TransactionCode) ? $response->TransactionCode : 'N/A';
-            
-            // Display the variables
-            echo "Transaction Status: " . $transactionStatus . "<br>";
-            echo "Transaction Receipt: " . $transactionReceipt . "<br>";
-            echo "Transaction Code: " . $transactionCode . "<br>";
-        }
-        else
-        {
-            // Transaction status is not Completed
-            echo "Unable to process the transaction. Transaction status is not Completed.";
-        }
+  <!-- The <a> tag that will be displayed after a delay -->
+  <a id="myLink" href="#">Click me!</a>
+
+  <script>
+    // Function to show the <a> tag after 15 seconds
+    function showLink() {
+      document.getElementById('myLink').style.display = 'inline'; // Display the <a> tag
     }
-    else
-    {
-        // Echo "unable to process the transaction" if response is invalid or empty
-        echo "Unable to process the transaction. Invalid or empty response.";
-    }
-}
-else
-{
-    echo "Error: No transaction ID provided.";
-}
-?>
+
+    // Delay in milliseconds (15 seconds = 15000 milliseconds)
+    const delay = 15000;
+
+    // Execute showLink function after the specified delay
+    setTimeout(showLink, delay);
+  </script>
+</body>
+</html>
