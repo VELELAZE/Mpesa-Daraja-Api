@@ -12,37 +12,29 @@ if(isset($_GET['check']))
     // Check if response is valid
     if($response !== null && isset($response->TransactionStatus))
     {
-        // Check if transaction was cancelled
-        if($response->TransactionStatus == 'Cancelled')
+        // Check if transaction status is Completed
+        if($response->TransactionStatus == 'Completed')
         {
-            echo "Transaction was cancelled by the user.";
+            // Display and store variables
+            $transactionStatus = $response->TransactionStatus;
+            $transactionReceipt = isset($response->TransactionReceipt) ? $response->TransactionReceipt : 'N/A';
+            $transactionCode = isset($response->TransactionCode) ? $response->TransactionCode : 'N/A';
+            
+            // Display the variables
+            echo "Transaction Status: " . $transactionStatus . "<br>";
+            echo "Transaction Receipt: " . $transactionReceipt . "<br>";
+            echo "Transaction Code: " . $transactionCode . "<br>";
         }
         else
         {
-            // Transaction is not cancelled, proceed to display details
-            if(isset($response->TransactionStatus) && isset($response->TransactionReceipt) && isset($response->TransactionCode))
-            {
-                // Store values in variables
-                $transactionStatus = $response->TransactionStatus;
-                $transactionReceipt = $response->TransactionReceipt;
-                $transactionCode = $response->TransactionCode;
-                
-                // Echo the values separately
-                echo "Transaction Status: " . $transactionStatus . "<br>";
-                echo "Transaction Receipt: " . $transactionReceipt . "<br>";
-                echo "Transaction Code: " . $transactionCode . "<br>";
-            }
-            else
-            {
-                // Handle case where response is missing expected fields
-                echo "Error: Unable to retrieve transaction details.";
-            }
+            // Transaction status is not Completed
+            echo "Unable to process the transaction. Transaction status is not Completed.";
         }
     }
     else
     {
-        // Handle case where response is invalid or empty
-        echo "Error: Unable to verify transaction status.";
+        // Echo "unable to process the transaction" if response is invalid or empty
+        echo "Unable to process the transaction. Invalid or empty response.";
     }
 }
 else
