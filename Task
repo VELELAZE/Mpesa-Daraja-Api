@@ -1,22 +1,31 @@
-<footer class="fixed-bottom">
-    <div class="container-fluid pt-4 px-4" style="background-color: #060241; border-radius: 3px;">
-        <div class="row">
-            <div class="col-12 col-sm-8 text-center text-sm-start">
-                <p style="font-size: 12px; color: blanchedalmond;">&copy; <a href="#" style="color: blanchedalmond; text-decoration: none;">SuperQash Agencies</a>, All Rights Reserved.</p>
-            </div>
-            <div class="col-12 col-sm-4 text-center text-sm-end">
-                <p style="font-size: 12px; color: blanchedalmond;">Designed By <a href="#" style="color: blanchedalmond; text-decoration: none;">Velelaze Softwares</a></p>
-            </div>
-        </div>
-    </div>
-</footer>
+<?php
+include 'function.php';
+include 'config.php';
 
-<style>
-    footer.fixed-bottom {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1030; /* Ensure this is higher than your main content z-index */
-    }
-</style>
+if(isset($_POST['pay']))
+{
+  $phone = $_POST['phone'];
+  $amount = $_POST['amount'];
+  $accountNumber = $_POST['accountNumber'];
+  
+  $result = makePayment($api_key, $email, $account_id, $amount, $phone, $accountNumber);
+  
+  // Check if payment initiation was successful
+  if(isset($result->success) && $result->success == '200')
+  {
+    // Payment initiation successful, capture transaction_request_id
+    $transaction_request_id = $result->transaction_request_id;
+    
+    // Store $transaction_request_id in a variable or session if needed
+    $check = $transaction_request_id;
+    
+    // Redirect or handle further processing
+    // echo '<script>window.location.href="index.php?success=Payment initiated successfully, Please enter your pin to complete the transaction"</script>';
+  }
+  else
+  {
+    // Payment initiation failed
+    // echo '<script>window.location.href="index.php?error=Failed to initiate payment"</script>';
+  }
+}
+?>
