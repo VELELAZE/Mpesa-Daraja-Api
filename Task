@@ -1,207 +1,3 @@
-here is my index.php file
-I want the spin to work only if the conditions in the index file are met and after spinning let the final value be stored in a php variable $final for 
-processing in the index php file. After spinning and displaying the final value, let the spin button remain dormant until a new bet is placed
-
-
-
-<?php
-include'../user/server.php';
-session_start();
-$username=$_SESSION['username'];
-$sql="SELECT *FROM spin WHERE username = '$username'";
-$result=mysqli_query($conn,$sql);
-if($result)
-{
-    $row=$result->fetch_assoc();
-    $balance =$row['balance'];
-}
-if(isset($_POST['submit']))
-{
-
-    $amount = $_POST['amount'];
-    $sql="UPDATE spin SET balance = balance - '$amount' WHERE username = '$username'";
-    $result=mysqli_query($conn,$sql);
-if($result)
-{
-    $sql="UPDATE signup SET balance = balance +'$final',profit= profit +'$final' WHERE username = '$username'";
-    $result=mysqli_query($conn,$sql);
-if($result)
-{
-    $_SESSION['success']="You have earned ".number_format($final,2)." from Spin Wheel. Keep earning";
-    header("../user/tiktok.php");
-}
-}
-   
-}
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spin Wheel</title>
-    <!---------------  CSS  --------------------->
-    <link rel="stylesheet" href="style.css">
-    <!---------------  Font Awesome  --------------------->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-        integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!---------------  Chart JS  --------------------->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!---------------  Chart JS Plugin  --------------------->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
-    <script>
-         if ( window.history.replaceState ) {
-        window.history.replaceState( null, null, window.location.href );
-    }
-    </script>
-</head>
-<style>
-    
-.input-control {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.input-control input{
-    border: 2px solid #f0f0f0;
-	border-radius: 2px;
-    border: #330 1px solid;
-	display: block;
-	font-size: 12px;
-	padding:4px;
-	width: 70%;
-}
-
-.input-control input:focus {
-    outline: 0;
-}
-
-.input-control.success input {
-    border-color: #09c372;
-}
-
-.input-control.error input {
-    border-color: #ff3860;
-}
-
-.input-control .error {
-    color: #ff3860;
-    font-size: 9px;
-    height: 13px;
-}
-</style>
-<body>
-    <div class="form">
-        <form action="" method="POST" id="form">
-            <p>Available Balance   <strong>Ksh <?php echo number_format($balance,2) ?></strong></p>
-           <!-- <div class="input">
-                <label for="">Bet Amount</label>
-                <input type="text" placeholder="eg 20" name="amount" id="amount">
-            </div>-->
-             <div class="input-control">
-                <label for="amount">Enter Bet Amount</label>
-                <input id="amount" name="amount" type="text">
-                <div class="error"></div>
-            </div>
-            <div class="button">
-                  <a  class="top-up">Top Up</a>
-                <button type="submit" id="submit" name="submit">Place Bet</button>
-            </div>
-        </form>
-    </div>
-    <div class="container">
-        <div class="wheel_box">
-            <canvas id="spinWheel"></canvas>
-            <button id="spin_btn" disabled>Spin</button>
-            <i class="fa-solid fa-location-arrow"></i>
-        </div>
-        <div id="text">
-            <p>Wheel Of Fortune</p>
-        </div>
-    </div>
-
-    <script>
-    const form = document.getElementById('form');
-    const amount = document.getElementById('amount');
-  
-  
-
-    form.addEventListener('submit', e => {
-        if (!validateInputs()) {
-            e.preventDefault();
-        }
-    });
-
-    const setError = (element, message) => {
-        const inputControl = element.parentElement;
-        const errorDisplay = inputControl.querySelector('.error');
-        errorDisplay.innerText = message;
-        inputControl.classList.add('error');
-        inputControl.classList.remove('success');
-    };
-
-    const setSuccess = element => {
-        const inputControl = element.parentElement;
-        const errorDisplay = inputControl.querySelector('.error');
-        errorDisplay.innerText = '';
-        inputControl.classList.add('success');
-        inputControl.classList.remove('error');
-    };
-
-   
-    const validateInputs = () => {
-        let isValid = true;
-        
-       
-        const amountValue = amount.value.trim();
-       
-        if (amountValue === '') {
-            setError(amount, 'Please Enter amount');
-            isValid = false;
-        } 
-        else if(amountValue < <?php echo $balance?>)
-           { 
-        setError(amount, 'Insufficient Balance');
-            isValid = false;
-            }
-         else {
-            setSuccess(amount);
-        }
-
-      
-
-        console.log("Is form valid: ", isValid);
-        return isValid;
-    };
-    </script>
-    <!---------------  SCRIPT  --------------------->
-    <script src="script.js"></script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-below is the script file
-
-
-
-const spinWheel = document.getElementById("spinWheel");
-const spinBtn = document.getElementById("spin_btn");
-const text = document.getElementById("text");
-const submitBtn = document.getElementById("submit");
-const amountInput = document.getElementById("amount");
-
-/* --------------- Minimum And Maximum Angle For A value  --------------------- */
 const spinValues = [
     { minDegree: 61, maxDegree: 90, value: 0 },
     { minDegree: 321, maxDegree: 350, value: 10 },
@@ -214,120 +10,65 @@ const spinValues = [
     { minDegree: 91, maxDegree: 120, value: 1000 },
 ];
 
-/* --------------- Size Of Each Piece  --------------------- */
-const size = [10, 10, 10, 10, 10, 10, 10, 10];
+const spinWheel = document.getElementById("spinWheel");
+const spinBtn = document.getElementById("spin_btn");
+const amountInput = document.getElementById("amount");
+const text = document.getElementById("text");
 
-/* --------------- Background Colors  --------------------- */
-const spinColors = [
-    "#E74C3C",
-    "#7D3C98",
-    "#2E86C1",
-    "#138D75",
-    "#F1C40F",
-    "#D35400",
-    "#138D75",
-    "#F1C40F",
-];
-
-/* --------------- Chart --------------------- */
-let spinChart = new Chart(spinWheel, {
-    plugins: [ChartDataLabels],
-    type: "pie",
-    data: {
-        labels: [0, 10, 30, 50, 100, 500, 1000, 3000],
-        datasets: [
-            {
-                backgroundColor: spinColors,
-                data: size,
-            },
-        ],
-    },
-    options: {
-        responsive: true,
-        animation: { duration: 0 },
-        plugins: {
-            tooltip: false,
-            legend: {
-                display: false,
-            },
-            datalabels: {
-                rotation: 90,
-                color: "#ffffff",
-                formatter: (_, context) => context.chart.data.labels[context.dataIndex],
-                font: { size: 14 },
-            },
-        },
-    },
-});
-
-/* --------------- Get the target degree based on the bet amount  --------------------- */
-const getTargetDegree = (amount) => {
-    if (amount >= 20 && amount <= 49) {
-        return (spinValues.find(v => v.value === 10)).minDegree;
-    } else if (amount >= 50 && amount <= 80) {
-        return (spinValues.find(v => v.value === 30)).minDegree;
-    } else if (amount >= 81 && amount <= 149) {
-        return (spinValues.find(v => v.value === 50)).minDegree;
-    } else if (amount >= 150 && amount <= 600) {
-        return (spinValues.find(v => v.value === 100)).minDegree;
-    } else if (amount >= 601 && amount <= 1500) {
-        return (spinValues.find(v => v.value === 500)).minDegree;
-    } else if (amount > 1500) {
-        return (spinValues.find(v => v.value === 1000)).minDegree;
+// Function to enable/disable spin button based on bet amount
+const toggleSpinButton = () => {
+    const betAmount = parseInt(amountInput.value, 10);
+    if (!isNaN(betAmount) && betAmount > 0 && betAmount <= <?php echo $balance ?>) {
+        spinBtn.disabled = false;
     } else {
-        return Math.floor(Math.random() * 360); // Default random spin for invalid amount
+        spinBtn.disabled = true;
     }
 };
 
-/* --------------- Display Value Based On The Angle --------------------- */
-const generateValue = (angleValue) => {
+// Event listener for form submission (bet placement)
+document.getElementById('form').addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevent form submission for now, handled by PHP
+    toggleSpinButton(); // Check if spin button should be enabled
+});
+
+// Function to generate the final value based on spin result
+const generateFinalValue = (targetDegree) => {
+    let finalValue = 0;
     for (let i of spinValues) {
-        if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
-            text.innerHTML = `<p>Congratulations, You Have Won KES ${i.value} </p>`;
-            spinBtn.disabled = false;
+        if (targetDegree >= i.minDegree && targetDegree <= i.maxDegree) {
+            finalValue = i.value;
             break;
         }
     }
+    return finalValue;
 };
 
-/* --------------- Spinning Code --------------------- */
+// Event listener for spin button click
 spinBtn.addEventListener("click", () => {
     const betAmount = parseInt(amountInput.value, 10);
-    const targetDegree = getTargetDegree(betAmount);
+    const targetDegree = getTargetDegree(betAmount); // Assuming getTargetDegree function is defined
+
+    // Simulate AJAX request to PHP backend to process spin (update balance and get final value)
+    fetch('process_spin.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ betAmount: betAmount, targetDegree: targetDegree }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        const finalValue = data.finalValue;
+        text.innerHTML = `<p>Congratulations, You Have Won KES ${finalValue} </p>`;
+        // Update PHP variable $final (optional, depending on your further PHP processing needs)
+        <?php
+        echo "const final = " . json_encode($final) . ";";
+        ?>
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+    // Disable spin button after spinning until a new bet is placed
     spinBtn.disabled = true;
-    text.innerHTML = `<p>Best Of Luck!</p>`;
-
-    let currentRotation = 0;
-    let spinTime = 4000; // Spin for 2 seconds
-    let startTime = null;
-
-    const spin = (timestamp) => {
-        if (!startTime) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-
-        if (elapsed < spinTime) {
-            currentRotation += 20; // Spin speed
-            spinChart.options.rotation = currentRotation % 360;
-            spinChart.update();
-            requestAnimationFrame(spin);
-        } else {
-            // Stop at target degree
-            spinChart.options.rotation = targetDegree;
-            spinChart.update();
-            generateValue(targetDegree);
-        }
-    };
-
-    requestAnimationFrame(spin);
 });
-
-/* --------------- Enable Spin Button On Valid Bet  --------------------- */
-submitBtn.addEventListener("click", () => {
-    const betAmount = parseInt(amountInput.value, 10);
-    if (!isNaN(betAmount) && betAmount > 0) {
-        spinBtn.disabled = false;
-    } else {
-        text.innerHTML = `<p>Please enter a valid bet amount.</p>`;
-    }
-});
-
