@@ -2,12 +2,14 @@
 // Safaricom Daraja credentials
 $consumerKey = 'your_consumer_key';
 $consumerSecret = 'your_consumer_secret';
-$shortCode = 'your_shortcode'; // Your Paybill or Till Number
-$passkey = 'your_passkey';
-$timestamp = date('YmdHis');
-$password = base64_encode($shortCode . $passkey . $timestamp);
 
-// Step 1: Generate Access Token
+// Paybill and payment details
+$shortCode = '222222'; // Paybill number you're paying to
+$amount = '500'; // Amount to pay
+$msisdn = '2547XXXXXXXX'; // Customer's phone number
+$billRefNumber = 'NTSA123'; // Reference number (e.g., NTSA service details)
+
+// Generate Access Token
 $curl = curl_init();
 curl_setopt($curl, CURLOPT_URL, 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
 curl_setopt($curl, CURLOPT_HTTPHEADER, ['Authorization: Basic ' . base64_encode("$consumerKey:$consumerSecret")]);
@@ -16,25 +18,18 @@ $response = curl_exec($curl);
 $accessToken = json_decode($response)->access_token;
 curl_close($curl);
 
-// Step 2: Initiate STK Push
-$stkURL = 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
-
+// Simulate C2B Payment
+$simulateURL = 'https://api.safaricom.co.ke/mpesa/c2b/v1/simulate';
 $data = [
-    'BusinessShortCode' => $shortCode, // Your Paybill or Till number
-    'Password' => $password,
-    'Timestamp' => $timestamp,
-    'TransactionType' => 'CustomerPayBillOnline',
-    'Amount' => '1000', // Payment amount
-    'PartyA' => '2547XXXXXXXX', // Customer phone number
-    'PartyB' => '222222', // Target Paybill number
-    'PhoneNumber' => '2547XXXXXXXX', // Customer phone number
-    'CallBackURL' => 'https://yourdomain.com/callback', // Your callback URL
-    'AccountReference' => 'ReferenceNumber', // NTSA Reference, e.g., car registration
-    'TransactionDesc' => 'Payment for NTSA services' // Description of the transaction
+    'ShortCode' => $shortCode,
+    'CommandID' => 'CustomerPayBillOnline', // Use this for Paybill payments
+    'Amount' => $amount,
+    'Msisdn' => $msisdn,
+    'BillRefNumber' => $billRefNumber
 ];
 
 $curl = curl_init();
-curl_setopt($curl, CURLOPT_URL, $stkURL);
+curl_setopt($curl, CURLOPT_URL, $simulateURL);
 curl_setopt($curl, CURLOPT_HTTPHEADER, [
     'Authorization: Bearer ' . $accessToken,
     'Content-Type: application/json'
