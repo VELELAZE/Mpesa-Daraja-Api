@@ -1,211 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scientific Calculator</title>
-  <style>
-    .calculator {
-      width: 220px;
-      margin: auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      background-color: #f4f4f4;
-    }
+<?php
+// Safaricom Daraja credentials
+$consumerKey = 'your_consumer_key';
+$consumerSecret = 'your_consumer_secret';
+$shortCode = 'your_shortcode'; // Your Paybill or Till Number
+$passkey = 'your_passkey';
+$timestamp = date('YmdHis');
+$password = base64_encode($shortCode . $passkey . $timestamp);
 
-    #display {
-      width: 100%;
-      height: 40px;
-      font-size: 18px;
-      text-align: right;
-      margin-bottom: 10px;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
+// Step 1: Generate Access Token
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+curl_setopt($curl, CURLOPT_HTTPHEADER, ['Authorization: Basic ' . base64_encode("$consumerKey:$consumerSecret")]);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($curl);
+$accessToken = json_decode($response)->access_token;
+curl_close($curl);
 
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-    }
+// Step 2: Initiate STK Push
+$stkURL = 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
 
-    button {
-      width: 100%;
-      height: 40px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-    }
+$data = [
+    'BusinessShortCode' => $shortCode, // Your Paybill or Till number
+    'Password' => $password,
+    'Timestamp' => $timestamp,
+    'TransactionType' => 'CustomerPayBillOnline',
+    'Amount' => '1000', // Payment amount
+    'PartyA' => '2547XXXXXXXX', // Customer phone number
+    'PartyB' => '222222', // Target Paybill number
+    'PhoneNumber' => '2547XXXXXXXX', // Customer phone number
+    'CallBackURL' => 'https://yourdomain.com/callback', // Your callback URL
+    'AccountReference' => 'ReferenceNumber', // NTSA Reference, e.g., car registration
+    'TransactionDesc' => 'Payment for NTSA services' // Description of the transaction
+];
 
-    button:hover {
-      background-color: #0056b3;
-    }
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $stkURL);
+curl_setopt($curl, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer ' . $accessToken,
+    'Content-Type: application/json'
+]);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($curl);
+curl_close($curl);
 
-    button[onclick*="="] {
-      background-color: #28a745;
-    }
-
-    button[onclick*="="]:hover {
-      background-color: #218838;
-    }
-  </style>
-</head>
-<body>
-
-<div class="calculator">
-  <input type="text" id="display" disabled />
-  <div class="buttons">
-    <button onclick="clearDisplay()">C</button>
-    <button onclick="deleteLast()">DEL</button>
-    <button onclick="appendOperator('/')">/</button>
-    <button onclick="appendOperator('*')">*</button>
-
-    <button onclick="appendNumber('7')">7</button>
-    <button onclick="appendNumber('8')">8</button>
-    <button onclick="appendNumber('9')">9</button>
-    <button onclick="appendOperator('-')">-</button>
-
-    <button onclick="appendNumber('4')">4</button>
-    <button onclick="appendNumber('5')">5</button>
-    <button onclick="appendNumber('6')">6</button>
-    <button onclick="appendOperator('+')">+</button>
-
-    <button onclick="appendNumber('1')">1</button>
-    <button onclick="appendNumber('2')">2</button>
-    <button onclick="appendNumber('3')">3</button>
-    <button rowspan="2" onclick="calculateResult()">=</button>
-
-    <button onclick="appendNumber('0')">0</button>
-    <button onclick="appendNumber('.')">.</button>
-    
-    <!-- Scientific function buttons -->
-    <button onclick="calculateTrig('sin')">sin</button>
-    <button onclick="calculateTrig('cos')">cos</button>
-    <button onclick="calculateTrig('tan')">tan</button>
-    <button onclick="calculateLog()">log</button>
-    <button onclick="calculateLn()">ln</button>
-    <button onclick="calculateFactorial()">x!</button>
-    
-    <!-- Inverse trigonometric buttons -->
-    <button onclick="calculateInverseTrig('asin')">asin</button>
-    <button onclick="calculateInverseTrig('acos')">acos</button>
-    <button onclick="calculateInverseTrig('atan')">atan</button>
-  </div>
-</div>
-
-<script>
-  function appendNumber(number) {
-    document.getElementById("display").value += number;
-  }
-
-  function appendOperator(operator) {
-    document.getElementById("display").value += " " + operator + " ";
-  }
-
-  function clearDisplay() {
-    document.getElementById("display").value = "";
-  }
-
-  function deleteLast() {
-    const display = document.getElementById("display");
-    display.value = display.value.slice(0, -1);
-  }
-
-  function calculateResult() {
-    const display = document.getElementById("display");
-    try {
-      display.value = eval(display.value.replace(/\s/g, ''));
-    } catch (error) {
-      display.value = "Error";
-    }
-  }
-
-  // Trigonometric functions
-  function calculateTrig(func) {
-    const display = document.getElementById("display");
-    const value = parseFloat(display.value);
-    if (isNaN(value)) {
-      display.value = "Error";
-      return;
-    }
-    switch (func) {
-      case 'sin':
-        display.value = Math.sin(value);
-        break;
-      case 'cos':
-        display.value = Math.cos(value);
-        break;
-      case 'tan':
-        display.value = Math.tan(value);
-        break;
-    }
-  }
-
-  // Inverse trigonometric functions
-  function calculateInverseTrig(func) {
-    const display = document.getElementById("display");
-    const value = parseFloat(display.value);
-    if (isNaN(value)) {
-      display.value = "Error";
-      return;
-    }
-    switch (func) {
-      case 'asin':
-        display.value = Math.asin(value);
-        break;
-      case 'acos':
-        display.value = Math.acos(value);
-        break;
-      case 'atan':
-        display.value = Math.atan(value);
-        break;
-    }
-  }
-
-  // Logarithm (base 10)
-  function calculateLog() {
-    const display = document.getElementById("display");
-    const value = parseFloat(display.value);
-    if (isNaN(value) || value <= 0) {
-      display.value = "Error";
-      return;
-    }
-    display.value = Math.log10(value);
-  }
-
-  // Natural logarithm (ln)
-  function calculateLn() {
-    const display = document.getElementById("display");
-    const value = parseFloat(display.value);
-    if (isNaN(value) || value <= 0) {
-      display.value = "Error";
-      return;
-    }
-    display.value = Math.log(value); // natural log
-  }
-
-  // Factorial
-  function calculateFactorial() {
-    const display = document.getElementById("display");
-    const value = parseInt(display.value);
-    if (isNaN(value) || value < 0) {
-      display.value = "Error";
-      return;
-    }
-    display.value = factorial(value);
-  }
-
-  // Helper function for factorial
-  function factorial(n) {
-    if (n === 0 || n === 1) return 1;
-    return n * factorial(n - 1);
-  }
-</script>
-
-</body>
-</html>
+// Output response
+echo $response;
+?>
