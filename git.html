@@ -1,0 +1,7 @@
+cp -r static static_backup
+
+git ls-files --deleted
+
+git stash
+git pull origin main
+git stash pop
